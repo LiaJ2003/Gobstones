@@ -40,8 +40,8 @@ def marbles(app):
     app.marbles = app.player1M + app.player2M
 
 def buttons(app):
-    #add home button
-    return
+    app.homeB = Button(10, 10, 60, 30)
+    
 
 def drawSnakeGame(app):
     drawCircle(app.width//2, app.height//2, 300, fill = None, border = "black")
@@ -60,3 +60,11 @@ def drawMarbles(app):
 def newgame_redrawAll(app):
     drawSnakeGame(app)
     drawMarbles(app)
+    #homeB
+    drawRect(app.homeB.x, app.homeB.y, app.homeB.width, app.homeB.height,
+             fill = None, border = "black", borderWidth = 2)
+    drawLabel('Home', 20, 25, size = 15, font = 'cinzel', align = 'left')
+
+def newgame_onMousePress(app, mouseX, mouseY):
+    if app.homeB.isClicked(mouseX, mouseY):
+        setActiveScreen('home')

@@ -32,12 +32,17 @@ def settings_redrawAll(app):
     drawLabel("Player 2", 1050, 200, size=60, fill = app.p2Color, font='cinzel')
     drawP1Menu(app)
     drawP2Menu(app)
+    
+    #homeB
+    drawRect(app.homeB.x, app.homeB.y, app.homeB.width, app.homeB.height,
+             fill = None, border = "black", borderWidth = 2)
+    drawLabel('Home', 20, 25, size = 15, font = 'cinzel', align = 'left')
+
     if app.p1MenuSelected == False:
         #draw other buttons the dropdown menu covers
         return
     else:
         return
-    
 
 def buttons(app):
     app.p1ThemeB = Button(app.p1BX, app.BY, app.menuWidth, app.menuHeight)
@@ -54,6 +59,8 @@ def buttons(app):
     app.p2HuffB = Button(app.p2BX, app.BY+(3*app.menuHeight), app.menuWidth, app.menuHeight)
     app.p2RaveB = Button(app.p2BX, app.BY+(4*app.menuHeight), app.menuWidth, app.menuHeight)
     app.p2SlytB = Button(app.p2BX, app.BY+(5*app.menuHeight), app.menuWidth, app.menuHeight)
+
+    app.homeB = Button(10, 10, 60, 30)
 
 def settings_onMousePress(app, mouseX, mouseY):
     if app.p1MenuSelected:
@@ -92,6 +99,8 @@ def settings_onMousePress(app, mouseX, mouseY):
         else:
             app.p2MenuSelected = False
   
+    if app.homeB.isClicked(mouseX, mouseY):
+            setActiveScreen('home')
 
 
 def drawP1Menu(app):

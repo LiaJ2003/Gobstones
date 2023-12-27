@@ -29,7 +29,7 @@ def home_onMousePress(app, mouseX, mouseY):
         setActiveScreen('continue')
     if app.helpB.isClicked(mouseX, mouseY):
         #app.help = True
-        setActiveScreen('help')
+        setActiveScreen('helpscreen')
     if app.settingsB.isClicked(mouseX, mouseY):
         #app.settings = True
         setActiveScreen('settings')
