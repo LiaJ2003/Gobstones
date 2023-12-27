@@ -11,13 +11,9 @@ def settings_onAppStart(app):
     app.BY = 270
     app.p1MenuSelected = False
     app.p2MenuSelected = False
-    app.textColor = 'black'
-    app.options = {'Default':(575, 115), 'Gryffindor':(575, 135), 
-                   'Hufflepuff':(575, 155), 'Ravenclaw':(575, 175), 
-                   'Slytherin':(575, 195)}
-    app.optionList = []
-    for option in app.options:
-        app.optionList += [option]
+
+    app.optionList = ['Default', 'Gryffindor', 'Hufflepuff', 'Ravenclaw', 'Slytherin']
+    app.colorList = ['black', 'maroon', 'gold', 'darkblue', 'darkgreen']
     app.selectedTheme = app.optionList[0]
 
     if app.p1MenuSelected == False: #if the menu is not open
@@ -32,8 +28,8 @@ def settings_onScreenActivate(app):
 def settings_redrawAll(app):
     drawLabel("Settings", 800, 100, size=80, font='cinzel')
     drawLabel("Theme", 200, 300, size=60, font='cinzel')
-    drawLabel("Player 1", 600, 200, size=60, font='cinzel')
-    drawLabel("Player 2", 1050, 200, size=60, font='cinzel')
+    drawLabel("Player 1", 600, 200, size=60, fill = app.p1Color, font='cinzel')
+    drawLabel("Player 2", 1050, 200, size=60, fill = app.p2Color, font='cinzel')
     drawP1Menu(app)
     drawP2Menu(app)
     if app.p1MenuSelected == False:
@@ -47,17 +43,55 @@ def buttons(app):
     app.p1ThemeB = Button(app.p1BX, app.BY, app.menuWidth, app.menuHeight)
     app.p2ThemeB = Button(app.p2BX, app.BY, app.menuWidth, app.menuHeight)
 
+    app.p1DefaultB = Button(app.p1BX, app.BY+(1*app.menuHeight), app.menuWidth, app.menuHeight)
+    app.p1GryfB = Button(app.p1BX, app.BY+(2*app.menuHeight), app.menuWidth, app.menuHeight)
+    app.p1HuffB = Button(app.p1BX, app.BY+(3*app.menuHeight), app.menuWidth, app.menuHeight)
+    app.p1RaveB = Button(app.p1BX, app.BY+(4*app.menuHeight), app.menuWidth, app.menuHeight)
+    app.p1SlytB = Button(app.p1BX, app.BY+(5*app.menuHeight), app.menuWidth, app.menuHeight)
+
+    app.p2DefaultB = Button(app.p2BX, app.BY+(1*app.menuHeight), app.menuWidth, app.menuHeight)
+    app.p2GryfB = Button(app.p2BX, app.BY+(2*app.menuHeight), app.menuWidth, app.menuHeight)
+    app.p2HuffB = Button(app.p2BX, app.BY+(3*app.menuHeight), app.menuWidth, app.menuHeight)
+    app.p2RaveB = Button(app.p2BX, app.BY+(4*app.menuHeight), app.menuWidth, app.menuHeight)
+    app.p2SlytB = Button(app.p2BX, app.BY+(5*app.menuHeight), app.menuWidth, app.menuHeight)
+
 def settings_onMousePress(app, mouseX, mouseY):
+    if app.p1MenuSelected:
+        if app.p1DefaultB.isClicked(mouseX, mouseY):
+            app.p1Color = 'red'
+        elif app.p1GryfB.isClicked(mouseX, mouseY):
+            app.p1Color = app.colorList[1]
+        elif app.p1HuffB.isClicked(mouseX, mouseY):
+            app.p1Color = app.colorList[2]
+        elif app.p1RaveB.isClicked(mouseX, mouseY):
+            app.p1Color = app.colorList[3]
+        elif app.p1SlytB.isClicked(mouseX, mouseY):
+            app.p1Color = app.colorList[4]
+
+    if app.p2MenuSelected:
+        if app.p2DefaultB.isClicked(mouseX, mouseY):
+            app.p2Color = 'blue'
+        elif app.p2GryfB.isClicked(mouseX, mouseY):
+            app.p2Color = app.colorList[1]
+        elif app.p2HuffB.isClicked(mouseX, mouseY):
+            app.p2Color = app.colorList[2]
+        elif app.p2RaveB.isClicked(mouseX, mouseY):
+            app.p2Color = app.colorList[3]
+        elif app.p2SlytB.isClicked(mouseX, mouseY):
+            app.p2Color = app.colorList[4]
+
     if app.p1ThemeB.isClicked(mouseX, mouseY):
         if not app.p1MenuSelected:
             app.p1MenuSelected = True
+            
         else:
-            app.p1MenuSelected = False
+            app.p1MenuSelected = False   
     if app.p2ThemeB.isClicked(mouseX, mouseY):
         if not app.p2MenuSelected:
             app.p2MenuSelected = True
         else:
             app.p2MenuSelected = False
+  
 
 
 def drawP1Menu(app):
@@ -65,26 +99,28 @@ def drawP1Menu(app):
     labelY = 295 
 
     drawLabel(f"{app.selectedTheme}", labelX, labelY, size = 20, align = 'left', 
-              fill = app.textColor, font = 'cursive', bold = True)
+              fill = app.p1Color, font = 'cursive', bold = True)
+    drawRect(app.p1BX, app.BY, app.menuWidth, app.menuHeight, fill = None, 
+                 border = app.p1Color, borderWidth = 2)
     if app.p1MenuSelected == True:
-        drawRegularPolygon(660, labelY, 10, 3, fill=app.textColor, border=None,
+        drawRegularPolygon(660, labelY, 10, 3, fill=app.p1Color, border=None,
                borderWidth=2, opacity=100, rotateAngle=0, dashes=False,
                align='center', visible=True)
-        drawRect(app.p1BX, app.BY, app.menuWidth, app.menuHeight*5, fill = None, 
-                 border = app.textColor, borderWidth = 2)
-        for i in range(len(app.options)):
-            drawRect(app.p1BX, app.BY+i*app.menuHeight, app.menuWidth, app.menuHeight, 
-                     fill = None, border = app.textColor, borderWidth = 1)
-            if i>0:
-                drawLabel(f"{app.optionList[i]}", labelX, labelY+i*app.menuHeight, 
-                          size = 20, align = 'left', fill = app.textColor, 
-                          font = 'cursive', bold = True)
+        drawRect(app.p1BX, app.BY, app.menuWidth, app.menuHeight*6, fill = None, 
+                 border = app.p1Color, borderWidth = 2)
+        for i in range(len(app.optionList)):
+            drawRect(app.p1BX, app.BY+((i+1)*app.menuHeight), app.menuWidth, app.menuHeight, 
+                     fill = None, border = app.p1Color, borderWidth = 1)
+
+            drawLabel(f"{app.optionList[i]}", labelX, labelY+((i+1)*app.menuHeight), 
+                        size = 20, align = 'left', fill = app.colorList[i], 
+                        font = 'cursive', bold = True)
+        
     else:
-        drawRegularPolygon(660, labelY, 10, 3, fill=app.textColor, border=None,
+        drawRegularPolygon(660, labelY, 10, 3, fill=app.p1Color, border=None,
                borderWidth=2, opacity=100, rotateAngle=180, dashes=False,
                align='center', visible=True)
-        drawRect(app.p1BX, app.BY, app.menuWidth, app.menuHeight, fill = None, 
-                 border = app.textColor, borderWidth = 2)
+        
 
     
 def drawP2Menu(app):
@@ -92,23 +128,23 @@ def drawP2Menu(app):
     labelY = 295
 
     drawLabel(f"{app.selectedTheme}", labelX, labelY, size = 20, align = 'left', 
-              fill = app.textColor, font = 'cursive', bold = True)
+              fill = app.p2Color, font = 'cursive', bold = True)
+    drawRect(app.p2BX, app.BY, app.menuWidth, app.menuHeight, fill = None, 
+                 border = app.p2Color, borderWidth = 2)
     if app.p2MenuSelected == True:
-        drawRegularPolygon(1100, labelY, 10, 3, fill=app.textColor, border=None,
+        drawRegularPolygon(1100, labelY, 10, 3, fill=app.p2Color, border=None,
                borderWidth=2, opacity=100, rotateAngle=0, dashes=False,
                align='center', visible=True)
-        drawRect(app.p2BX, app.BY, app.menuWidth, app.menuHeight*5, fill = None, 
-                 border = app.textColor, borderWidth = 2)
-        for i in range(len(app.options)):
-            drawRect(app.p2BX, app.BY+i*app.menuHeight, app.menuWidth, app.menuHeight, 
-                     fill = None, border = app.textColor, borderWidth = 1)
-            if i>0:
-                drawLabel(f"{app.optionList[i]}", labelX, labelY+i*app.menuHeight, 
-                          size = 20, align = 'left', fill = app.textColor, 
-                          font = 'cursive', bold = True)
+        drawRect(app.p2BX, app.BY, app.menuWidth, app.menuHeight*6, fill = None, 
+                 border = app.p2Color, borderWidth = 2)
+        for i in range(len(app.optionList)):
+            drawRect(app.p2BX, app.BY+((i+1)*app.menuHeight), app.menuWidth, app.menuHeight, 
+                     fill = None, border = app.p2Color, borderWidth = 1)
+            drawLabel(f"{app.optionList[i]}", labelX, labelY+((i+1)*app.menuHeight),
+                        size = 20, align = 'left', fill = app.colorList[i], 
+                        font = 'cursive', bold = True)
     else:
-        drawRegularPolygon(1100, labelY, 10, 3, fill=app.textColor, border=None,
+        drawRegularPolygon(1100, labelY, 10, 3, fill=app.p2Color, border=None,
                borderWidth=2, opacity=100, rotateAngle=180, dashes=False,
                align='center', visible=True)
-        drawRect(app.p2BX, app.BY, app.menuWidth, app.menuHeight, fill = None, 
-                 border = app.textColor, borderWidth = 2)
+        

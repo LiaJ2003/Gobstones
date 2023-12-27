@@ -14,11 +14,10 @@ def newgame_onScreenActivate(app):
 def players(app):
     #player 1
     app.player1Name = "Player 1"
-    app.player1C = "red"
 
     #player 2
     app.player2Name = "Player 2"
-    app.player2C = "blue"
+
 
 def marbles(app):
     #player 1 marbles
@@ -50,13 +49,13 @@ def drawSnakeGame(app):
     drawCircle(app.width//2, app.height//2, 100, fill = None, border = "black")
 
 def drawMarbles(app):
-    drawLabel(app.player1Name, 160, 60, size=30, font="cinzel")
+    drawLabel(app.player1Name, 160, 60, size=30, fill = app.p1Color, font="cinzel")
     for marble in app.player1M:
-        drawCircle(marble.x, marble.y, marble.radius, fill = app.player1C)
+        drawCircle(marble.x, marble.y, marble.radius, fill = app.p1Color)
     
-    drawLabel(app.player2Name, app.width-220, 60, size=30, font="cinzel")
+    drawLabel(app.player2Name, app.width-220, 60, size=30, fill = app.p2Color, font="cinzel")
     for marble in app.player2M:
-        drawCircle(marble.x, marble.y, marble.radius, fill = app.player2C)
+        drawCircle(marble.x, marble.y, marble.radius, fill = app.p2Color)
 
 def newgame_redrawAll(app):
     drawSnakeGame(app)
