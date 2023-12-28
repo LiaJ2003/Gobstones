@@ -1,19 +1,6 @@
 from cmu_graphics import *
 #rules and how to play
 
-def helpscreen_onAppStart(app):
-    app.returnX = app.width//2
-    app.returnY = app.height - 20
-
-def helpscreen_onMousePress(app, mouseX, mouseY):
-    #returns to the original home screen; again will need to connect
-    
-    return
-
-def helpscreen_redrawAll(app):
-    #draw elements of help screen, similar to before
-    return
-
 #pseudo-coding
 
 #rules:
@@ -23,3 +10,24 @@ def helpscreen_redrawAll(app):
 # DEVELOPER SIDE: we calculate the magnitude + the impact it would take
 # release, and try to get as close to the "hole" without actually going into it
 
+from buttons import Button
+
+def helpscreen_onAppStart(app):
+    print('In helpscreen_onAppStart')
+    buttons(app)
+
+def helpscreen_onScreenActivate(app):
+    print('In helpscreen_onScreenActivate')
+
+def buttons(app):
+    app.homeB = Button(10, 10, 60, 30)
+
+def helpscreen_onMousePress(app, mouseX, mouseY):
+    if app.homeB.isClicked(mouseX, mouseY):
+        setActiveScreen('home')
+
+def helpscreen_redrawAll(app):
+    #homeB
+    drawRect(app.homeB.x, app.homeB.y, app.homeB.width, app.homeB.height,
+             fill = None, border = "black", borderWidth = 2)
+    drawLabel('Home', 20, 25, size = 15, font = 'cinzel', align = 'left')
