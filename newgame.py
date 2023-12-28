@@ -8,7 +8,6 @@ def newgame_onAppStart(app):
     buttons(app)
     players(app)
     marbles(app)
-    app.backHome = False
 
     app.gameOver = False
     app.p1Turn = True
@@ -69,8 +68,6 @@ def drawConfirmButton(app):
             drawLabel("Confirm", labelX, labelY,
                       size=12, font="cinzel")
 
-    app.homeB = Button(app.width//2, app.height-25, 100, 15)
-
 def drawSnakeGame(app):
     drawCircle(app.boardLeft + app.boardWidth // 2, app.boardTop + app.boardHeight // 2, 300, fill=None, border="black")
     drawCircle(app.boardLeft + app.boardWidth // 2, app.boardTop + app.boardHeight // 2, 200, fill=None, border="black")
@@ -99,21 +96,6 @@ def drawInnerBoard(app):
              fill=None, border="black", borderWidth=2)
 
 
-# BACKLOG: unsure how to connect this back to home screen with current sys
-#         keeping for now, remove if doesn't work -Jieun
-
-def newgame_onMousePress(app, mouseX, mouseY):
-    if app.homeB.isClicked(mouseX, mouseY):
-        # print("new game") #BUGGY: does not work; will examine further
-        app.backHome = True
-
-# BACKLOG: unsure how to connect this back to home screen with current sys
-#         keeping for now, remove if doesn't work -Jieun
-
-def newgame_onMousePress(app, mouseX, mouseY):
-    if app.homeB.isClicked(mouseX, mouseY):
-        # print("new game") #BUGGY: does not work; will examine further
-        app.backHome = True
 
 def newgame_redrawAll(app):
     drawSnakeGame(app)
