@@ -1,12 +1,14 @@
 from cmu_graphics import *
 from marbles import Marble
 from buttons import Button
+from home import * #to connect back to home for now
 
 def newgame_onAppStart(app):
     print('In newgame_onAppStart')
     buttons(app)
     players(app)
     marbles(app)
+    app.backHome = False
 
 def newgame_onScreenActivate(app):
     print('In newgame_onScreenActivate')
@@ -41,8 +43,7 @@ def marbles(app):
     app.marbles = app.player1M + app.player2M
 
 def buttons(app):
-    #add home button
-    return
+    app.homeB = Button(app.width//2, app.height-25, 100, 15)
 
 def drawSnakeGame(app):
     drawCircle(app.width//2, app.height//2, 300, fill = None, border = "black")
@@ -58,6 +59,27 @@ def drawMarbles(app):
     for marble in app.player2M:
         drawCircle(marble.x, marble.y, marble.radius, fill = app.player2C)
 
+# BACKLOG: unsure how to connect this back to home screen with current sys
+#         keeping for now, remove if doesn't work -Jieun
+
+def newgame_onMousePress(app, mouseX, mouseY):
+    if app.homeB.isClicked(mouseX, mouseY):
+        # print("new game") #BUGGY: does not work; will examine further
+        app.backHome = True
+
 def newgame_redrawAll(app):
     drawSnakeGame(app)
     drawMarbles(app)
+    drawRect(app.homeB.x - app.homeB.width, app.homeB.y - app.homeB.height, 
+             app.homeB.width, app.homeB.height, fill = "black")
+    drawLabel("Home", app.homeB.x-app.homeB.width//2, 
+              app.homeB.y-app.homeB.height//2, size=14, font='cinzel',
+              fill = "white")
+
+def newgame_onStep(app):
+    if app.backHome:
+        setActiveScreen("home")
+    
+    
+
+    
