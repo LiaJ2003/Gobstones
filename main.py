@@ -1,3 +1,5 @@
+#screens + main run
+
 from cmu_graphics import *
 
 from home import *

@@ -1,7 +1,6 @@
 from cmu_graphics import *
 from marbles import Marble
 from buttons import Button
-from home import * #to connect back to home for now
 
 def newgame_onAppStart(app):
     print('In newgame_onAppStart')
@@ -56,6 +55,7 @@ def buttons(app):
     app.homeB = Button(10, 10, 60, 30)
     
 def drawConfirmButton(app):
+    #confirming to make sure that player wants to place here
     for marble in app.marbles:
         if marble.confirm == False and marble.dragging == False and marble.chosen:
             marble.confirmButton.x = marble.x - 30  
@@ -87,6 +87,7 @@ def drawBoard(app):
     drawRect(app.boardLeft, app.boardTop, app.boardWidth, app.boardHeight,
              fill=None, border="black", borderWidth=2)
 
+#drawing board boundaries to click into later
 def drawInnerBoard(app):
     innerBoardLeft = app.boardLeft + 2 * app.p1m1.radius
     innerBoardTop = app.boardTop + 2 * app.p1m1.radius
@@ -102,7 +103,10 @@ def newgame_redrawAll(app):
     drawMarbles(app)
     drawBoard(app)
     drawInnerBoard(app)
-    drawConfirmButton(app)
+    
+    for marble in app.marbles:
+        if marble.checkConfirm:
+            drawConfirmButton(app)
     
     #homeB
     drawRect(app.homeB.x, app.homeB.y, app.homeB.width, app.homeB.height,
@@ -114,20 +118,32 @@ def newgame_onMousePress(app, mouseX, mouseY):
         setActiveScreen('home')
 
     for marble in app.marbles:
-        if marble.isChosen(mouseX, mouseY) and marble.confirm == False:
+        #checking if the marble is chosen
+        if marble.isChosen(mouseX, mouseY):
+            #if so, then marble should be able to be moved
             marble.dragging = True
-            marble.chosen = True
-        if marble.confirmButton.isClicked(mouseX, mouseY) and marble.chosen:
+            marble.moving = True
+            #if not confirmed, then it's currently chosen/can still be moved
+            if not marble.confirm and marble.inBoundary(app):
+                marble.chosen = True
+        else:
+            marble.moving = False
+
+        if (marble.confirmButton.isClicked(mouseX, mouseY) and marble.chosen):
             marble.confirm = True
 
+# def newgame_onStep(app):
+#     for marble in app.marbles:
+#         if marble.confirm:
+#             marble.moving = False
 
 def newgame_onMouseDrag(app, mouseX, mouseY):
     for marble in app.marbles:
-        if marble.dragging:
-            marble.updatePosition(mouseX, mouseY, app)
+        marble.updatePosition(mouseX, mouseY, app)
 
 def newgame_onMouseRelease(app, mouseX, mouseY):
     for marble in app.marbles:
         if marble.dragging:
+            marble.checkConfirm = True
             marble.dragging = False
             
