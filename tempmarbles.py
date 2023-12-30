@@ -17,3 +17,5 @@ class Marbles():
                 return True
         return False
     
+    def __repr__(self):
+        return f"{self.team} Marble at {self.x}, {self.y}"
