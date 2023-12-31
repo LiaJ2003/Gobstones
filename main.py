@@ -1,5 +1,3 @@
-#screens + main run
-
 from cmu_graphics import *
 
 from home import *
@@ -13,7 +11,6 @@ def onAppStart(app):
     print('In onAppStart')
     app.p1Color = 'red'
     app.p2Color = 'blue'
-
 
 
 def onAppStop(app):

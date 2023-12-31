@@ -39,6 +39,9 @@ def home_onMousePress(app, mouseX, mouseY):
         if marble.isChosen(mouseX, mouseY):
             marble.chosen = True
 
+def home_onMouseDrag(app, mouseX, mouseY):
+
+    return
 
 def home_onKeyPress(app, key):
     if key == "r":
@@ -76,6 +79,7 @@ def home_redrawAll(app):
 
 
 
-# def home_onMouseDrag(app, mouseX, mouseY):
-    #Unneeded for now unless additional features
-#     return
+# def onStep(app):
+#     for marble in app.movingmarbles:
+#         marble
+

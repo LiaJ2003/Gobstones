@@ -1,15 +1,4 @@
 from cmu_graphics import *
-#rules and how to play
-
-#pseudo-coding
-
-#rules:
-# player goes one at a time, starting with player 1
-# each player chooses a marble on their side, place it into playing location 
-# then, they choose direction and strength of the marble 
-# DEVELOPER SIDE: we calculate the magnitude + the impact it would take
-# release, and try to get as close to the "hole" without actually going into it
-
 from buttons import Button
 
 def helpscreen_onAppStart(app):
