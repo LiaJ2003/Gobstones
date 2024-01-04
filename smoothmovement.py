@@ -82,14 +82,19 @@ def onMouseDrag(app, mouseX, mouseY):
         curM.x = mouseX
         curM.y = mouseY
 
+def onMouseRelease(app, mouseX, mouseY):
+    if len(app.marbles["chosen"]) == 1:
+        for item in app.marbles["chosen"]:
+            snapM = item
+        snapM.x = findClosestDistance(app, mouseX)
+        snapM.y = mouseY
+
 def findClosestDistance(app, x):
     b1X = 125
     b2X = app.width-125
     if x < app.width//2:
         return b1X
     return b2X
-
-
 
     
 
