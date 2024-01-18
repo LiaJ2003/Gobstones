@@ -18,7 +18,14 @@ def lastMarbleInsert(center, remaining, total):
             return total.insert(index, lastM)
         index += 1
     return total.append(lastM)
+<<<<<<< Updated upstream
 
+=======
+    
+    
+    
+## keep this for later ##
+>>>>>>> Stashed changes
 def getOrdered(center, remaining, total):
     print(total)
     if len(remaining) == 1:
