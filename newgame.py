@@ -29,6 +29,7 @@ def newgame_onAppStart(app):
     app.length = None
 
     app.drawWinStage = False
+    app.dead = None
 
 def newgame_onScreenActivate(app):
     print('In newgame_onScreenActivate')
@@ -65,7 +66,6 @@ def marbles(app):
 
     # total marbles
     app.marbles = app.player1M + app.player2M
-    app.marblesInPlay = []
 
 
 def buttons(app):
@@ -171,26 +171,20 @@ def chooseAndConfirm(mouseX, mouseY, marbleList, app):
                 marble.dragging = True
                 marble.chosen = True
                 app.playingMarble = marble
-
-                print("marble in play added")
-                app.marblesInPlay.append(marble)
         if marble.confirmButton.isClicked(mouseX, mouseY) and marble.chosen and marble.confirm == False and not marble.used:
             marble.confirm = True
             
 def distance(x, y):
     return ((x ** 2) + (y ** 2)) ** 0.5
 
-
 def newgame_onMouseDrag(app, mouseX, mouseY):
     for marble in app.marbles:
         if marble.dragging and not marble.used:
             marble.updatePosition(mouseX, mouseY, app)
-            
         if marble.confirm and not marble.used and not marble.dragging:
             marble.launching = True
             app.mouseX = mouseX
             app.mouseY = mouseY
-            
             #print(f"{app.mouseX}, {app.mouseY}")
 
 def newgame_onMouseRelease(app, mouseX, mouseY):
@@ -200,8 +194,7 @@ def newgame_onMouseRelease(app, mouseX, mouseY):
         if marble.launching:
             marble.move = True
             marble.used = True
-            if not hasFallen(marble, app.width, app.height, 50):
-                app.p1Turn = not app.p1Turn
+            app.p1Turn = not app.p1Turn
             marble.launching = False
 
             directionX = marble.x - app.mouseX
@@ -228,26 +221,17 @@ def hasFallen(marble, width, height, radius):
             return True
 
 
-def moveMarbles(marble, width, height, radius):
+def getAngle(marble):
     for angle in range(0, 360, 45):
-        # print("marble", marble)
-        if checkAngles(marble, marble.x, marble.y, 300, height, angle):
-            marble.angle = angle
-    while marble.x < (width+radius) and marble.y > (0.75*width+radius):
-        marble.speed = 5
-        marble.x += marble.speed * math.cos(marble.angle)
-        marble.y += marble.speed * math.sin(marble.angle)
-    
+        print("marble", marble)
+        if checkAngles(marble, marble.x, marble.y, app.boardWidth, app.boardHeight, angle):
+            return angle
     
 
 
-## WRONG IMPLEMENTATION FOR BACKTRACKING ##
-        
-    # need to check each angle at the edge 45 degrees at a time with 
-    # beginning and endpoint, then draw line, see if it intersects
     
 def checkAngles(marble, x, y, width, height, angle):
-    # print(marble)
+    print(marble)
     if x >= width and y > 0.75*height:
         return True
     #possible moves
@@ -256,7 +240,7 @@ def checkAngles(marble, x, y, width, height, angle):
         x += math.cos(marble.angle)
         y += math.sin(marble.angle)
             # check
-        if not checkAngleCollisions(x, y, app.marblesInPlay):
+        if not checkAngleCollisions(marble, app.marbles):
             return checkAngles(marble, x, y, width, height, angle)
         x -= math.cos(marble.angle)
         y -= math.sin(marble.angle)
@@ -264,10 +248,8 @@ def checkAngles(marble, x, y, width, height, angle):
 
 def checkAngleCollisions(x, y, totM):
     for marble in totM:
-        radius = marble.radius
-        # wrong check FIX LATER
-        if marble.x - radius <= x <= marble.x + radius:
-            if marble.y - radius <= y <= marble.y + radius:
+        if marble.x - marble.radius <= curM.x <= marble.x + marble.radius:
+            if marble.y - marble.radius <= curM.y <= marble.y + marble.radius:
                 return True
     return False
 
@@ -281,15 +263,40 @@ def newgame_onStep(app):
         if marble.done:
             if hasFallen(marble, app.width, app.height, 50):
                 app.marblesToRemove.append(marble)
-                print(marble)
-                if marble in app.marblesInPlay:
-                    app.marblesInPlay.pop()
-                
+            
+    if len(app.marblesToRemove) == 1:
+        app.dead = app.marblesToRemove.pop() 
+        app.dead.alive = False   
+        if not app.dead.stop:
+            app.dead.stop =True
+            app.dead.x = app.width//2
+            app.dead.y = app.height//2
+            app.dead.angle = getAngle(app.dead)
+            print(f"dead angle: {app.dead.angle}")
+            app.dead.speed = 5
 
-    for marble in app.marblesToRemove:
-        marble.x = app.width//2
-        marble.y = app.height//2
-        moveMarbles(marble, app.width, app.height, 50)
+        else:
+            if not app.dead.putBack:
+                app.dead.y+=10
+
+    # while app.dead != None and not app.dead.putBack:
+    #     if app.dead.x < 400 or app.dead.y < 50 or app.dead.x > 1100 or app.dead.y > 750:
+    #         app.dead.putBack = True
+    #     app.dead.x += 10
+    #     app.dead.y += 10
+
+    #     app.dead.y += app.dead.speed*math.sin(app.dead.angle)
+
+
+            
+
+    # for marble in app.marblesToRemove:
+    #     marble.x = app.width//2
+    #     marble.y = app.height//2
+    #     if not marble.putBack:
+    #         marble.x+= 10
+            # marble.y+=10
+        # moveMarbles(app.marbles, app.width, app.height, 50)
         # removePlayerMarble(app, marble)
     
 
@@ -305,7 +312,6 @@ def newgame_onStep(app):
 
 
 def recursiveCollisions(marble, app, recursion_count=0, max_recursion=5):
-
     hitMarble = checkMarbleCollision(marble, app)
     
     if hitMarble is not None and marble.collide:
@@ -337,7 +343,8 @@ def executeMarbleMove(marble, app):
         app.marblesToRemove.append(marble)
 
     #SPEED DECAY
-    marble.speed *= 0.97  
+    if marble.alive:
+        marble.speed *= 0.97  
 
     if marble.speed < 0.5:
         marble.move = False
@@ -359,7 +366,7 @@ def checkMarbleCollision(M, app):
         if marble is not M and not marble.collide:
             length = distance((marble.x - M.x), (marble.y - M.y))
             combinedRadius = marble.radius + M.radius
-            # print(f"checking collision: ({marble.x}, {marble.y})")
+            print(f"checking collision: ({marble.x}, {marble.y})")
 
             if length < combinedRadius:
                 marble.collide = True

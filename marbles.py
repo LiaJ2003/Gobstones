@@ -17,6 +17,9 @@ class Marble():
         self.move = False #when it's moving on onStep (animation)
         self.used = False #cannot be used again
         self.done = False
+        self.putBack = False
+        self.stop = False
+        self.alive = True
 
     def isChosen(self, mX, mY):
         if mX <= self.x+self.radius and mX >= self.x-self.radius:
