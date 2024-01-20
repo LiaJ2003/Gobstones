@@ -16,6 +16,7 @@ class Marble():
         self.launching = False
         self.move = False #when it's moving on onStep (animation)
         self.used = False #cannot be used again
+        self.done = False
 
     def isChosen(self, mX, mY):
         if mX <= self.x+self.radius and mX >= self.x-self.radius:
@@ -64,9 +65,10 @@ class Marble():
     def updatePosition(self, mouseX, mouseY, app):
         if self.dragging:
             self.getClosestSide(mouseX, mouseY, app)
-            # new_x = max(app.boardLeft + self.radius,
-            #             min(mouseX, app.boardLeft + app.boardWidth - self.radius))
-            # new_y = max(app.boardTop + self.radius,
-            #             min(mouseY, app.boardTop + app.boardHeight - self.radius))
+
+    def __repr__(self):
+        return f"Marble at {self.x},{self.y} with {self.angle} degrees"
+    
+
 
 
