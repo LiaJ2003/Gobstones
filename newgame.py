@@ -63,6 +63,7 @@ def marbles(app):
 
     # total marbles
     app.marbles = app.player1M + app.player2M
+    app.marblesInPlay = []
 
 
 def buttons(app):
@@ -168,20 +169,26 @@ def chooseAndConfirm(mouseX, mouseY, marbleList, app):
                 marble.dragging = True
                 marble.chosen = True
                 app.playingMarble = marble
+
+                print("marble in play added")
+                app.marblesInPlay.append(marble)
         if marble.confirmButton.isClicked(mouseX, mouseY) and marble.chosen and marble.confirm == False and not marble.used:
             marble.confirm = True
             
 def distance(x, y):
     return ((x ** 2) + (y ** 2)) ** 0.5
 
+
 def newgame_onMouseDrag(app, mouseX, mouseY):
     for marble in app.marbles:
         if marble.dragging and not marble.used:
             marble.updatePosition(mouseX, mouseY, app)
+            
         if marble.confirm and not marble.used and not marble.dragging:
             marble.launching = True
             app.mouseX = mouseX
             app.mouseY = mouseY
+            
             #print(f"{app.mouseX}, {app.mouseY}")
 
 def newgame_onMouseRelease(app, mouseX, mouseY):
@@ -191,7 +198,8 @@ def newgame_onMouseRelease(app, mouseX, mouseY):
         if marble.launching:
             marble.move = True
             marble.used = True
-            app.p1Turn = not app.p1Turn
+            if not hasFallen(marble, app.width, app.height, 50):
+                app.p1Turn = not app.p1Turn
             marble.launching = False
 
             directionX = marble.x - app.mouseX
@@ -220,12 +228,15 @@ def hasFallen(marble, width, height, radius):
 
 def moveMarbles(marble, width, height, radius):
     for angle in range(0, 360, 45):
-        print("marble", marble)
-        if checkAngles(marble, marble.x, marble.y, 300, height, 0):
+        # print("marble", marble)
+        if checkAngles(marble, marble.x, marble.y, 300, height, angle):
             marble.angle = angle
     while marble.x < (width+radius) and marble.y > (0.75*width+radius):
-        marble.x += 1
-        marble.y += 1
+        marble.speed = 5
+        marble.x += marble.speed * math.cos(marble.angle)
+        marble.y += marble.speed * math.sin(marble.angle)
+    
+    
 
 
 ## WRONG IMPLEMENTATION FOR BACKTRACKING ##
@@ -234,28 +245,27 @@ def moveMarbles(marble, width, height, radius):
     # beginning and endpoint, then draw line, see if it intersects
     
 def checkAngles(marble, x, y, width, height, angle):
-    print(marble)
-    if angle > 360:
-        if x >= width and y > 0.75*height:
-            return True
-        else:
-            return False
+    # print(marble)
+    if x >= width and y > 0.75*height:
+        return True
     #possible moves
     else:
         # make move
-        x += 1
-        y += 1
+        x += math.cos(marble.angle)
+        y += math.sin(marble.angle)
             # check
-        if not checkAngleCollisions(app, marble, app.marbles):
-            return checkAngles(marble, x, y, width, height, angle+45)
-        x -= 1
-        y -= 1
+        if not checkAngleCollisions(marble, app.marblesInPlay):
+            return checkAngles(marble, x, y, width, height, angle)
+        x -= math.cos(marble.angle)
+        y -= math.sin(marble.angle)
     return False
 
 def checkAngleCollisions(curM, totM):
     for marble in totM:
-        if marble.x - marble.r <= curM.x <= marble.x + marble.r:
-            if marble.y - marble.r <= curM.y <= marble.y + marble.r:
+        radius = marble.radius
+        # wrong check FIX LATER
+        if marble.x - radius <= curM.x <= marble.x + radius:
+            if marble.y - radius <= curM.y <= marble.y + radius:
                 return True
     return False
 
@@ -269,11 +279,15 @@ def newgame_onStep(app):
         if marble.done:
             if hasFallen(marble, app.width, app.height, 50):
                 app.marblesToRemove.append(marble)
+                print(marble)
+                if marble in app.marblesInPlay:
+                    app.marblesInPlay.pop()
+                
 
     for marble in app.marblesToRemove:
         marble.x = app.width//2
         marble.y = app.height//2
-        moveMarbles(app.marbles, app.width, app.height, 50)
+        moveMarbles(marble, app.width, app.height, 50)
         # removePlayerMarble(app, marble)
     
 
@@ -343,7 +357,7 @@ def checkMarbleCollision(M, app):
         if marble is not M and not marble.collide:
             length = distance((marble.x - M.x), (marble.y - M.y))
             combinedRadius = marble.radius + M.radius
-            print(f"checking collision: ({marble.x}, {marble.y})")
+            # print(f"checking collision: ({marble.x}, {marble.y})")
 
             if length < combinedRadius:
                 marble.collide = True
