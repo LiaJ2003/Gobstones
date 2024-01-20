@@ -23,10 +23,11 @@ def home_onMousePress(app, mouseX, mouseY):
     #initial game settings
     if app.beginB.isClicked(mouseX, mouseY):
         #app.start = True
+        app.contPoss = True
         setActiveScreen('newgame')
     if app.contB.isClicked(mouseX, mouseY) and app.contPoss:
         #app.cont = True
-        setActiveScreen('continue')
+        setActiveScreen('contgame')
     if app.helpB.isClicked(mouseX, mouseY):
         #app.help = True
         setActiveScreen('helpscreen')
@@ -57,8 +58,12 @@ def drawStartScreen(app):
     drawLabel("New Game", app.beginB.x + app.beginB.width//2,
               app.beginB.y + app.beginB.height//2, size=24, font='cinzel',
               fill = "white")
-    drawRect(app.contB.x, app.contB.y, app.contB.width, app.contB.height,
+    if app.contPoss:
+        drawRect(app.contB.x, app.contB.y, app.contB.width, app.contB.height,
              fill = "gold")
+    else:
+        drawRect(app.contB.x, app.contB.y, app.contB.width, app.contB.height,
+             fill = "gray")
     drawLabel("Continue", app.contB.x + app.contB.width//2,
               app.contB.y + app.contB.height//2, size=24, font='cinzel',
               fill = "white")
@@ -77,9 +82,4 @@ def drawStartScreen(app):
 def home_redrawAll(app):
     drawStartScreen(app)
 
-
-
-# def onStep(app):
-#     for marble in app.movingmarbles:
-#         marble
 

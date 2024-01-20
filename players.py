@@ -1,3 +1,5 @@
+# MORE USEFUL FOR LATER, MORE COMPLEX IMPLEMENTATION
+
 class Player:
     def __init__(self, marbles):
         self.marbles = marbles

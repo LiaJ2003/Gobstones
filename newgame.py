@@ -10,6 +10,8 @@ def newgame_onAppStart(app):
     players(app)
     marbles(app)
 
+    app.contPoss = True
+
     app.gameOver = False
     app.p1Turn = True
 
@@ -254,18 +256,18 @@ def checkAngles(marble, x, y, width, height, angle):
         x += math.cos(marble.angle)
         y += math.sin(marble.angle)
             # check
-        if not checkAngleCollisions(marble, app.marblesInPlay):
+        if not checkAngleCollisions(x, y, app.marblesInPlay):
             return checkAngles(marble, x, y, width, height, angle)
         x -= math.cos(marble.angle)
         y -= math.sin(marble.angle)
     return False
 
-def checkAngleCollisions(curM, totM):
+def checkAngleCollisions(x, y, totM):
     for marble in totM:
         radius = marble.radius
         # wrong check FIX LATER
-        if marble.x - radius <= curM.x <= marble.x + radius:
-            if marble.y - radius <= curM.y <= marble.y + radius:
+        if marble.x - radius <= x <= marble.x + radius:
+            if marble.y - radius <= y <= marble.y + radius:
                 return True
     return False
 
