@@ -1,0 +1,214 @@
+// field is x: 3750, y: 5000 steps
+
+#include <AccelStepper.h>
+
+#define MAGNET_pin 50
+#define pul1 2 // y1
+#define dir1 3 // y1
+#define pul2 4 // y2
+#define dir2 5 // y2
+#define pul3 6 // x1
+#define dir3 7 // x1
+#define pul4 8 // x2
+#define dir4 9 // x2
+#define limit1 48   // home switch x
+#define limit2 46   // home switch y
+
+int xsteps = 0;
+int ysteps = 0;
+
+const byte numChars = 32;
+char receivedChars[numChars];
+char tempChars[numChars];        // temporary array for use when parsing
+
+// variables to hold the parsed data
+int x1 = 0;
+int y1 = 0;
+int x2 = 0;
+int y2 = 0;
+
+boolean newData = false;
+
+AccelStepper stepper1(1, pul1, dir1);
+AccelStepper stepper2(1, pul2, dir2);
+AccelStepper stepper3(1, pul3, dir3);
+AccelStepper stepper4(1, pul4, dir4);
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(MAGNET_pin, OUTPUT);
+
+  pinMode(limit1, INPUT_PULLUP);
+  pinMode(limit2, INPUT_PULLUP);
+
+  stepper1.setMaxSpeed(500); // 200 steps per second
+  stepper1.setAcceleration(250); // 100 steps per second squared
+  stepper2.setMaxSpeed(500); // 200 steps per second
+  stepper2.setAcceleration(250); // 100 steps per second squared
+  stepper3.setMaxSpeed(500); // 200 steps per second
+  stepper3.setAcceleration(250); // 100 steps per second squared
+  stepper4.setMaxSpeed(500); // 200 steps per second
+  stepper4.setAcceleration(250); // 100 steps per second squared
+
+  while (digitalRead(limit1)) { // Do this until the switch is activated
+    digitalWrite(dir3, LOW);
+    digitalWrite(pul3, HIGH);
+    digitalWrite(dir4, HIGH);
+    digitalWrite(pul4, HIGH);
+    delay(5);
+    digitalWrite(pul3, LOW);
+    digitalWrite(pul4, LOW);
+    delay(5);
+  }
+  
+  while (!digitalRead(limit1)) { // Do this until the switch is not activated
+    digitalWrite(dir3, HIGH);
+    digitalWrite(pul3, HIGH);
+    digitalWrite(dir4, LOW);
+    digitalWrite(pul4, HIGH);
+    delay(10);
+    digitalWrite(pul3, LOW);
+    digitalWrite(pul4, LOW);
+    delay(10);
+  }
+
+  while (digitalRead(limit2)) { // Do this until the switch is activated
+    digitalWrite(dir1, HIGH);
+    digitalWrite(pul1, HIGH);
+    digitalWrite(dir2, HIGH);
+    digitalWrite(pul2, HIGH);
+    delay(5);
+    digitalWrite(pul1, LOW);
+    digitalWrite(pul2, LOW);
+    delay(5);
+  }
+  
+  while (!digitalRead(limit2)) { // Do this until the switch is not activated
+    digitalWrite(dir1, LOW);
+    digitalWrite(pul1, HIGH);
+    digitalWrite(dir2, LOW);
+    digitalWrite(pul2, HIGH);
+    delay(10);
+    digitalWrite(pul1, LOW);
+    digitalWrite(pul2, LOW);
+    delay(10);
+  }
+
+  stepper1.setMaxSpeed(1000); // 200 steps per second
+  stepper2.setMaxSpeed(1000); // 200 steps per second
+  stepper3.setMaxSpeed(1000); // 200 steps per second
+  stepper4.setMaxSpeed(1000); // 200 steps per second
+
+  xsteps = 0;
+  ysteps = 0;
+
+}
+
+void loop() {
+  recvWithStartEndMarkers();
+  if (newData == true) {
+      strcpy(tempChars, receivedChars);
+      parseData();
+      showParsedData();
+      // from origin, this moves left
+      if (x2 == 1) {
+        Serial.println("TEST");
+        digitalWrite(LED_BUILTIN, HIGH);
+        digitalWrite(MAGNET_pin, HIGH);
+      }
+      else {
+        digitalWrite(LED_BUILTIN, LOW);
+        digitalWrite(MAGNET_pin, LOW);
+      }
+      stepper3.moveTo(x1); // negative ccw
+      stepper4.moveTo((-1) * x1);
+      // from origin, this moves right
+      // stepper3.moveTo(-500); // negative ccw
+      // stepper4.moveTo(500);
+
+      stepper1.moveTo((-1) * y1); // pos is cw
+      stepper2.moveTo((-1) * y1); // negative is ccw
+
+      newData = false;
+  }
+  stepper3.run();
+  stepper4.run();
+  stepper1.run();
+  stepper2.run();
+  //   // if (msg.substring(1,2) == "B") {
+  //   //   digitalWrite(LED_BUILTIN, HIGH);
+  //   //   digitalWrite(MAGNET_pin, HIGH);
+  //   // }
+  //   // else if (msg == "End") {
+  //   //   digitalWrite(LED_BUILTIN, LOW);
+  //   //   digitalWrite(MAGNET_pin, LOW);
+  //   // }
+  // }
+
+}
+
+void recvWithStartEndMarkers() {
+    static boolean recvInProgress = false;
+    static byte ndx = 0;
+    char startMarker = '(';
+    char endMarker = ')';
+    char rc;
+
+    while (Serial.available() > 0 && newData == false) {
+        rc = Serial.read();
+
+        if (recvInProgress == true) {
+            if (rc != endMarker) {
+                receivedChars[ndx] = rc;
+                ndx++;
+                if (ndx >= numChars) {
+                    ndx = numChars - 1;
+                }
+            }
+            else {
+                receivedChars[ndx] = '\0'; // terminate the string
+                recvInProgress = false;
+                ndx = 0;
+                newData = true;
+            }
+        }
+
+        else if (rc == startMarker) {
+            recvInProgress = true;
+        }
+    }
+}
+
+//============
+
+void parseData() {      // split the data into its parts
+
+    char * strtokIndx; // this is used by strtok() as an index
+
+    strtokIndx = strtok(tempChars, ",");
+    x1 = atoi(strtokIndx); // copy it to messageFromPC
+ 
+    strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
+    y1 = atoi(strtokIndx);     // convert this part to an integer
+
+    strtokIndx = strtok(NULL, ",");
+    x2 = atof(strtokIndx);     // convert this part to a float
+
+    strtokIndx = strtok(NULL, ",");
+    y2 = atof(strtokIndx);     // convert this part to a float
+
+}
+
+//============
+
+void showParsedData() {
+    Serial.print("x1 ");
+    Serial.println(x1);
+    Serial.print("y1 ");
+    Serial.println(y1);
+    Serial.print("x2 ");
+    Serial.println(x2);
+    Serial.print("y2 ");
+    Serial.println(y2);
+}
