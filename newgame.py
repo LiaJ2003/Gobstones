@@ -10,10 +10,10 @@ def newgame_onAppStart(app):
     players(app)
     marbles(app)
 
-    app.contPoss = True
-
     app.gameOver = False
+    app.winner = None
     app.p1Turn = True
+    app.turnCount = 0
 
     app.playingMarble = None
 
@@ -30,7 +30,10 @@ def newgame_onAppStart(app):
 
     app.drawWinStage = False
     app.dead = None
+    app.deadCount = 0
 
+    app.p1Score = 0
+    app.p2Score = 0
 def newgame_onScreenActivate(app):
     print('In newgame_onScreenActivate')
 
@@ -71,8 +74,8 @@ def marbles(app):
 def buttons(app):
     app.homeB = Button(10, 10, 60, 30)
     
-def drawConfirmButton(app):
-    for marble in app.marbles:
+def drawConfirmButton(app, marbleList):
+    for marble in marbleList:
         if marble.confirm == False and marble.dragging == False and marble.chosen:
             marble.confirmButton.x = marble.x - 30  # Adjust the position as needed
             marble.confirmButton.y = marble.y + marble.radius + 10  # Adjust the position as needed
@@ -104,21 +107,8 @@ def drawBoard(app):
     drawRect(app.boardLeft, app.boardTop, app.boardWidth, app.boardHeight,
              fill=None, border="black", borderWidth=2)
 
-def drawInnerBoard(app):
-    innerBoardLeft = app.boardLeft + 2 * app.p1m1.radius
-    innerBoardTop = app.boardTop + 2 * app.p1m1.radius
-
-    drawRect(innerBoardLeft, innerBoardTop,
-             app.boardWidth - 4 * app.p1m1.radius, app.boardHeight - 4 * app.p1m1.radius,
-             fill=None, border="black", borderWidth=2)
-
 def drawLaunch(app):
     for marble in app.marbles:
-        # if marble.confirm and marble.launching == False and marble.move == False:
-        #     labelX = marble.confirmButton.x + marble.confirmButton.width / 2
-        #     labelY = marble.confirmButton.y + marble.confirmButton.height / 2
-        #     drawLabel("Click and drag to launch!", labelX, labelY,
-        #             size=12, font="cinzel")
         if marble.launching:
                 # draw the launching dots
                 directionX = marble.x - app.mouseX
@@ -135,14 +125,24 @@ def drawLaunch(app):
                         circleY = marble.y + i * stepSize * spacedDirectionY
                         drawCircle(circleX, circleY, 5, fill="lightgrey")  
 
-
+def drawWinner(app):
+    drawRect(app.width//2, app.height//2, 400, 100, align = 'center', border = "black", fill = "white")
+    if app.winner == True:
+        drawLabel("Player 1 Wins", 750, app.height//2, size = 50, font = 'cinzel', fill = app.p1Color)
+    elif app.winner == False:
+        drawLabel("Player 2 Wins", 750,  app.height//2, size = 50, font = 'cinzel', fill = app.p2Color)
+    else:
+        drawLabel("It's a Tie", 750,  app.height//2, size = 50, font = 'cinzel', fill = "black")
+    drawLabel(f"Points: {app.p1Score}", 160, 130, size = 20, fill = "black", font = "cinzel")
+    drawLabel(f"Points: {app.p2Score}", app.width-220, 130, size = 20, fill = "black", font = "cinzel")
+    
 
 def newgame_redrawAll(app):
+    
     drawSnakeGame(app)
     drawMarbles(app)
     drawBoard(app)
-    #drawInnerBoard(app)
-    drawConfirmButton(app)
+    #drawConfirmButton(app)
     drawLaunch(app)
     
     #homeB
@@ -153,9 +153,14 @@ def newgame_redrawAll(app):
     #player turn
     if app.p1Turn: 
         drawLabel("Player 1's Turn", 750, 25, size = 25, font = 'cinzel', fill = app.p1Color)
+        drawConfirmButton(app, app.player1M)
     else:
         drawLabel("Player 2's Turn", 750, 25, size = 25, font = 'cinzel', fill = app.p2Color)
-    
+        drawConfirmButton(app, app.player2M)
+
+    if app.gameOver:
+        drawWinner(app)
+
 def newgame_onMousePress(app, mouseX, mouseY):
     if app.homeB.isClicked(mouseX, mouseY):
         setActiveScreen('home')
@@ -195,6 +200,7 @@ def newgame_onMouseRelease(app, mouseX, mouseY):
             marble.move = True
             marble.used = True
             app.p1Turn = not app.p1Turn
+            app.turnCount += 1
             marble.launching = False
 
             directionX = marble.x - app.mouseX
@@ -203,112 +209,67 @@ def newgame_onMouseRelease(app, mouseX, mouseY):
             if marble.confirm:
 
                 length = distance(directionX, directionY)
-                spacedDirectionX = directionX / length
-                spacedDirectionY = directionY / length
             
                 #SET SPEED MULTIPLIER
                 marble.speed = length * 0.05  
-                marble.angle = math.atan2(spacedDirectionY, spacedDirectionX)
+                marble.angle = math.atan2(directionY, directionX)
 
     app.playingMarble = None
 
-def hasFallen(marble, width, height, radius):
-    curX = marble.x
-    curY = marble.y
-    centerX, centerY = width//2, height//2
-    if (centerX - radius <= curX <= centerX + radius):
-        if (centerY - radius <= curY <= centerY + radius):
-            return True
-
-
-def getAngle(marble):
-    for angle in range(0, 360, 45):
-        print("marble", marble)
-        if checkAngles(marble, marble.x, marble.y, app.boardWidth, app.boardHeight, angle):
-            return angle
-    
-
-
-    
-def checkAngles(marble, x, y, width, height, angle):
-    print(marble)
-    if x >= width and y > 0.75*height:
-        return True
-    #possible moves
-    else:
-        # make move
-        x += math.cos(marble.angle)
-        y += math.sin(marble.angle)
-            # check
-        if not checkAngleCollisions(marble, app.marbles):
-            return checkAngles(marble, x, y, width, height, angle)
-        x -= math.cos(marble.angle)
-        y -= math.sin(marble.angle)
-    return False
-
-def checkAngleCollisions(x, y, totM):
-    for marble in totM:
-        if marble.x - marble.radius <= curM.x <= marble.x + marble.radius:
-            if marble.y - marble.radius <= curM.y <= marble.y + marble.radius:
-                return True
-    return False
 
 def newgame_onStep(app):
     for marble in app.marbles:
-        marble.collide = False  #reset
-
+        marble.collide = False 
         if marble.move:
             recursiveCollisions(marble, app)
-
-        if marble.done:
-            if hasFallen(marble, app.width, app.height, 50):
-                app.marblesToRemove.append(marble)
-            
-    if len(app.marblesToRemove) == 1:
-        app.dead = app.marblesToRemove.pop() 
-        app.dead.alive = False   
-        if not app.dead.stop:
-            app.dead.stop =True
-            app.dead.x = app.width//2
-            app.dead.y = app.height//2
-            app.dead.angle = getAngle(app.dead)
-            print(f"dead angle: {app.dead.angle}")
-            app.dead.speed = 5
-
-        else:
-            if not app.dead.putBack:
-                app.dead.y+=10
-
-    # while app.dead != None and not app.dead.putBack:
-    #     if app.dead.x < 400 or app.dead.y < 50 or app.dead.x > 1100 or app.dead.y > 750:
-    #         app.dead.putBack = True
-    #     app.dead.x += 10
-    #     app.dead.y += 10
-
-    #     app.dead.y += app.dead.speed*math.sin(app.dead.angle)
-
-
-            
-
-    # for marble in app.marblesToRemove:
-    #     marble.x = app.width//2
-    #     marble.y = app.height//2
-    #     if not marble.putBack:
-    #         marble.x+= 10
-            # marble.y+=10
-        # moveMarbles(app.marbles, app.width, app.height, 50)
-        # removePlayerMarble(app, marble)
     
 
-    #End of game
-    winStatus = getWinState(app)
-    if winStatus != None:
-        app.drawWinStage = True
-        if winStatus == 0: 
-            app.winner = app.player1Name
-        else:
-            app.winner = app.player2Name
+    allMarblesUsed = True
+    for marble in app.marbles:
+        if not marble.used:
+            allMarblesUsed = False
+            break
 
+    # Check if none of the marbles are moving
+    noMovingMarbles = True
+    for marble in app.marbles:
+        if marble.move:
+            noMovingMarbles = False
+            break
+
+    if allMarblesUsed and noMovingMarbles and not app.gameOver:
+        app.gameOver = True
+        decideWinner(app)
+        print(app.p1Score)
+        print(app.p2Score)
+        if app.p1Score > app.p2Score:
+            app.winner = True
+        elif app.p1Score < app.p2Score:
+            app.winner = False
+        else:
+            app.winner = None
+
+def decideWinner(app):
+    for marble in app.player1M:
+        if ((marble.x - app.boardLeft - app.boardWidth // 2) ** 2 + 
+        (marble.y - app.boardTop - app.boardHeight // 2) ** 2 <= 100 ** 2):
+            app.p1Score += 100
+        elif((marble.x - app.boardLeft - app.boardWidth // 2) ** 2 + 
+        (marble.y - app.boardTop - app.boardHeight // 2) ** 2 <= 200 ** 2):
+            app.p1Score += 50     
+        else: #wihtin largest one
+            app.p1Score += 10
+    
+    for marble in app.player2M:
+        if ((marble.x - app.boardLeft - app.boardWidth // 2) ** 2 + 
+        (marble.y - app.boardTop - app.boardHeight // 2) ** 2 <= 100 ** 2):
+            app.p2Score += 100
+        elif((marble.x - app.boardLeft - app.boardWidth // 2) ** 2 + 
+        (marble.y - app.boardTop - app.boardHeight // 2) ** 2 <= 200 ** 2):
+            app.p2Score += 50     
+        else: #wihtin largest one
+            app.p2Score += 10
+                
 
 
 def recursiveCollisions(marble, app, recursion_count=0, max_recursion=5):
@@ -334,13 +295,15 @@ def executeMarbleMove(marble, app):
     marble.x += marble.speed * math.cos(marble.angle)
     marble.y += marble.speed * math.sin(marble.angle)
     
-    
     ##  KEEPING FOR NOW BUT NO LONGER NEEDED
 
     #inner hole
     if ((marble.x - app.boardLeft - app.boardWidth // 2) ** 2 + 
     (marble.y - app.boardTop - app.boardHeight // 2) ** 2 <= 50 ** 2):
+        app.deadCount += 1
         app.marblesToRemove.append(marble)
+        removeMarble(app, marble)
+
 
     #SPEED DECAY
     if marble.alive:
@@ -356,7 +319,17 @@ def executeMarbleMove(marble, app):
 
         if ((marble.x - app.boardLeft - app.boardWidth // 2) ** 2 + 
         (marble.y - app.boardTop - app.boardHeight // 2) ** 2 >= 300 ** 2):
+            app.deadCount += 1
             app.marblesToRemove.append(marble)
+            removeMarble(app, marble)
+
+def removeMarble(app, marble):
+    if not app.p1Turn:
+        app.player1M.remove(marble)
+    else:
+        app.player2M.remove(marble)
+    app.marbles.remove(marble)
+
 
 def checkMarbleCollision(M, app):
     if M.collide: 
@@ -366,7 +339,7 @@ def checkMarbleCollision(M, app):
         if marble is not M and not marble.collide:
             length = distance((marble.x - M.x), (marble.y - M.y))
             combinedRadius = marble.radius + M.radius
-            print(f"checking collision: ({marble.x}, {marble.y})")
+            #print(f"checking collision: ({marble.x}, {marble.y})")
 
             if length < combinedRadius:
                 marble.collide = True
@@ -374,11 +347,3 @@ def checkMarbleCollision(M, app):
                 print(f"collided!")
                 return marble
     return None
-
-def getWinState(app):
-    if app.player1MarbleNum == 0:
-        return 1
-    elif app.player2MarbleNum == 0:
-        return 0
-    else:
-        return None
